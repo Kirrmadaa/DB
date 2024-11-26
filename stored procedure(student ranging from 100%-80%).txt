@@ -1,0 +1,83 @@
+-- Show available databases
+SHOW DATABASES;
+
+-- Use the "college" database
+USE college;
+
+-- Show tables in the "college" database
+SHOW TABLES;
+
+-- Create the "gradesheet" table
+CREATE TABLE gradesheet (
+    Roll_no INT PRIMARY KEY,
+    Course VARCHAR(20),
+    Course_code VARCHAR(5),
+    Semester INT,
+    Total_marks INT,
+    Percentage INT
+);
+
+-- Insert data into the "gradesheet" table
+INSERT INTO gradesheet (Roll_no, Course, Course_code, Semester, Total_marks, Percentage) VALUES
+(101, 'Mathematics', 'MATH1', 1, 150, 75),
+(102, 'Physics', 'PHYS1', 1, 120, 50),
+(103, 'Chemistry', 'CHEM1', 1, 140, 70),
+(104, 'Biology', 'BIO1', 1, 165, 32),
+(105, 'Computer Science', 'CS1', 1, 200, 100),
+(106, 'Mathematics', 'MATH2', 2, 179, 95),
+(107, 'Physics', 'PHYS2', 2, 100, 50),
+(108, 'Chemistry', 'CHEM2', 2, 130, 65),
+(109, 'Biology', 'BIO2', 2, 195, 97),
+(110, 'Computer Science', 'CS2', 2, 170, 85),
+(111, 'Mathematics', 'MATH3', 3, 160, 80),
+(112, 'Physics', 'PHYS3', 3, 188, 90),
+(113, 'Chemistry', 'CHEM3', 3, 145, 72),
+(114, 'Biology', 'BIO3', 3, 200, 100),
+(115, 'Computer Science', 'CS3', 3, 155, 77);
+
+
+DELIMITER //
+
+CREATE PROCEDURE number_stu(Course_name VARCHAR(20))
+BEGIN
+    -- Declare variables to store counts for each range
+    DECLARE range_80_100 INT DEFAULT 0;
+    DECLARE range_79_70 INT DEFAULT 0;
+    DECLARE range_69_60 INT DEFAULT 0;
+    DECLARE range_59_50 INT DEFAULT 0;
+    DECLARE range_below_49 INT DEFAULT 0;
+
+    -- Calculate the number of students in each range
+    SELECT COUNT(*) INTO range_80_100 
+    FROM gradesheet 
+    WHERE Percentage BETWEEN 80 AND 100 AND Course = Course_name;
+
+    SELECT COUNT(*) INTO range_79_70 
+    FROM gradesheet 
+    WHERE Percentage BETWEEN 70 AND 79 AND Course = Course_name;
+
+    SELECT COUNT(*) INTO range_69_60 
+    FROM gradesheet 
+    WHERE Percentage BETWEEN 60 AND 69 AND Course = Course_name;
+
+    SELECT COUNT(*) INTO range_59_50 
+    FROM gradesheet 
+    WHERE Percentage BETWEEN 50 AND 59 AND Course = Course_name;
+
+    SELECT COUNT(*) INTO range_below_49 
+    FROM gradesheet 
+    WHERE Percentage < 50 AND Course = Course_name;
+
+    -- Display the results
+    SELECT 
+        CONCAT('80-100%: ', range_80_100) AS "Range 80-100%",
+        CONCAT('70-79%: ', range_79_70) AS "Range 70-79%",
+        CONCAT('60-69%: ', range_69_60) AS "Range 60-69%",
+        CONCAT('50-59%: ', range_59_50) AS "Range 50-59%",
+        CONCAT('Below 49%: ', range_below_49) AS "Below 49%";
+END //
+
+DELIMITER ;
+
+-- Call the procedure for a specific course
+CALL number_stu('Computer Science');
