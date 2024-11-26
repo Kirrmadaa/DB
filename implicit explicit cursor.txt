@@ -1,0 +1,93 @@
+
+
+show databases;
+
+use college;
+
+show tables;
+
+CREATE TABLE Stud (
+
+regno INT PRIMARY KEY, sname VARCHAR(100), DOB DATE, country VARCHAR(50), email VARCHAR(100), marks INT);
+
+INSERT INTO Stud (regno, sname, DOB, country, email, marks) VALUES
+(101, 'Rahul Dewani', '2002-05-17', 'India', 'rahul.dewani@example.com', 85),
+(102, 'Palak Rajani', '2003-03-23', 'India', 'palak.rajani@example.com', 92),
+(103, 'Vaishali Chhangani', '2002-12-10', 'India', 'vaishali.chhangani@example.com', 88),
+(104, 'Lucky Dewani', '2001-11-08', 'India', 'lucky.dewani@example.com', 98),
+(105, 'John Doe', '2002-07-19', 'USA', 'john.doe@example.com', 78),
+(106, 'Jane Smith', '2001-09-22', 'UK', 'jane.smith@example.co.uk', 91),
+(107, 'Michael Lee', '2002-02-13', 'Australia', 'michael.lee@example.com.au', 64),
+(108, 'Carlos Alvarez', '2003-01-29', 'Spain', 'carlos alvarez@example.es', 89),
+(109, 'Fatima Khan', '2002-06-05', 'Pakistan', 'fatima.khan@example.pk', 87),
+(110, 'Li Wei', '2001-04-30', 'China', 'li.wei@example.cn', 93);
+
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateStud()
+BEGIN
+    DECLARE rows_affected INT;
+
+    -- Update the record
+    UPDATE stud 
+    SET sname = 'Nidhi' 
+    WHERE regno = 95;
+
+    -- Retrieve the number of rows affected
+    SET rows_affected = ROW_COUNT();
+
+    -- Conditional check for rows affected
+    IF rows_affected > 0 THEN
+        SELECT 'Record updated' AS message;
+    ELSE
+        SELECT 'No record updated with regno: 95' AS message;
+    END IF;
+END;
+//
+
+DELIMITER ;
+call Updatestud;
+select* from stud;
+
+DELIMITER //
+
+CREATE PROCEDURE display_highest_marks_of_student()
+BEGIN
+    -- Declare variables
+    DECLARE reg_no INT;
+    DECLARE stud_name VARCHAR(50);
+    DECLARE stud_marks INT;
+    DECLARE done BOOLEAN DEFAULT FALSE;
+
+    -- Declare a cursor for fetching the top 5 students based on marks
+    DECLARE cur CURSOR FOR
+    SELECT regno, sname, marks 
+    FROM stud
+    ORDER BY marks DESC
+    LIMIT 5;
+
+    -- Declare a handler to manage the end of the cursor
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Open the cursor
+    OPEN cur;
+
+    -- Loop through the cursor and fetch data
+    read_loop: LOOP
+        FETCH cur INTO reg_no, stud_name, stud_marks;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Display the fetched data
+        SELECT reg_no AS regno, stud_name AS sname, stud_marks AS marks;
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE cur;
+END;
+//
+
+DELIMITER ;
+call display_highest_marks_of_student;
