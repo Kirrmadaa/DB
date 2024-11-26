@@ -1,0 +1,90 @@
+-- Drop the database if it already exists
+DROP DATABASE IF EXISTS Trig_asignment;
+
+-- Create the database
+CREATE DATABASE Trig_asignment;
+
+-- Switch to the new database
+USE Trig_asignment;
+
+-- Create the main employee table
+CREATE TABLE employ_1 (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(58),
+    join_date DATE,
+    designation VARCHAR(15),
+    salary BIGINT
+);
+
+-- Create the audit table with operation time as default current timestamp
+CREATE TABLE employ_1_audit (
+    emp_id INT,
+    emp_name VARCHAR(50),
+    join_date DATE,
+    designation VARCHAR(15),
+    salary BIGINT,
+    operation_type VARCHAR(50),
+    operation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (emp_id, operation_time)
+);
+
+-- Insert sample data into the employ_1 table
+INSERT INTO employ_1 (emp_id, emp_name, join_date, designation, salary)
+VALUES
+    (101, 'Ganesh Deshmukh', '2022-03-01', 'Manager', 850000),
+    (102, 'Snehal Pawar', '2021-11-15', 'Developer', 550000),
+    (103, 'Vishal Patil', '2023-02-10', 'Analyst', 450000),
+    (104, 'Prajakta Shinde', '2020-07-18', 'HR', 400000),
+    (105, 'Sagar Jomi', '2019-09-30', 'Engineer', 600000);
+
+-- View the data in the employ_1 table
+SELECT * FROM employ_1;
+
+-- Change the delimiter to define the trigger
+DELIMITER //
+
+-- Create a trigger to log updates into the employ_1_audit table
+CREATE TRIGGER updated_trigger
+BEFORE UPDATE ON employ_1
+FOR EACH ROW
+BEGIN
+    -- Insert the old record into the audit table with operation type 'UPDATE'
+    INSERT INTO employ_1_audit (
+        emp_id, emp_name, join_date, designation, salary, operation_type
+    ) VALUES (
+        OLD.emp_id, OLD.emp_name, OLD.join_date, OLD.designation, OLD.salary, 'UPDATE'
+    );
+END; //
+
+-- Reset the delimiter back to default
+DELIMITER ;
+
+-- Change the delimiter to define the trigger
+DELIMITER //
+
+-- Create a trigger to log deletions into the employ_1_audit table
+CREATE TRIGGER deleted_record
+BEFORE DELETE ON employ_1
+FOR EACH ROW
+BEGIN
+    -- Insert the old record into the audit table with operation type 'DELETE'
+    INSERT INTO employ_1_audit (
+        emp_id, emp_name, join_date, designation, salary, operation_type
+    ) VALUES (
+        OLD.emp_id, OLD.emp_name, OLD.join_date, OLD.designation, OLD.salary, 'DELETE'
+    );
+END; //
+
+-- Reset the delimiter back to default
+DELIMITER ;
+-- Update the designation of an employee
+UPDATE employ_1
+SET designation = 'Senior Manager'
+WHERE emp_id = 101;
+-- View the records in the audit log table
+SELECT * FROM employ_1_audit;
+-- Delete an employee record
+DELETE FROM employ_1
+WHERE emp_id = 102;
+-- View the records in the audit log table again to verify the deletion log
+SELECT * FROM employ_1_audit;
